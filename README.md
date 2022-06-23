@@ -1,0 +1,1 @@
+authnext v4, mongoose, nextjs
