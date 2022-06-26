@@ -3,6 +3,7 @@ import EmailProvider from 'next-auth/providers/email';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
 import FacebookProvider from 'next-auth/providers/facebook';
+import CredentialProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 import clientPromise from '../../../lib/mongodb';
 import dbConnect from '../../../lib/dbConnect';
@@ -10,6 +11,26 @@ import User from '../../../models/User';
 
 export default NextAuth({
   providers: [
+    CredentialProvider({
+      name: "credentials",
+      credentials: {
+        email: {
+          label: "Email",
+          type: "email",
+        },
+        name: {
+          label: "Name",
+          type: "text",
+        },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        await dbConnect();
+        const result = await User.findOne({email:credentials.email});
+        if(result) return res.status(400).json({ success: false });
+        return null;
+      },
+    }),
     EmailProvider({
       server: process.env.EMAIL_SERVER,
       from: process.env.EMAIL_FROM,
